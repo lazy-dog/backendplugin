@@ -1,0 +1,6 @@
+plugin:
+    name: 'karlm.backendplugin::lang.plugin.name'
+    description: 'karlm.backendplugin::lang.plugin.description'
+    author: karlm
+    icon: oc-icon-bomb
+    homepage: ''
