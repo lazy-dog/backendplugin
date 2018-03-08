@@ -25,17 +25,18 @@ class Backup extends Command
     public function handle()
     {
         $this->output->writeln('Backing up files...');
-        $time_start = microtime(true);
-        exec("zip -r /var/www/backup2/backup_$(date +\"%Y_%m_%d\").zip /var/www/html");
-        // Display Script End time
-        $time_end = microtime(true);
-        //dividing with 60 will give the execution time in minutes other wise seconds
-        $execution_time = ($time_end - $time_start);
-        //execution time of the script
-        $this->output->writeln('File backup completed.');
-        $this->output->writeln('Total Execution Time: '.round($execution_time).' Seconds');
-        //$this->output->writeln('Backing up database...');
 
+        $time_start = microtime(true);
+
+        exec("zip -r /var/www/html/backup_$(date +\"%Y_%m_%d\").zip /var/www/html");
+
+        $time_end = microtime(true);
+
+        $execution_time = ($time_end - $time_start);
+
+        $this->output->writeln('File backup completed.');
+        
+        $this->output->writeln('Total Execution Time: '.round($execution_time).' Seconds');
 
     }
 
