@@ -26,16 +26,42 @@ class Backup extends Command
     {
         $this->output->writeln('Backing up files...');
 
+        $www_directory = '/var/www';
+
+		$files = scandir($www_directory);
+
+		$this->output->writeln('Available directories:');
+
+		foreach($files as $file){
+			if($file == '..' || $file=='.'){continue;}
+			$this->output->writeln($file);
+		}
+
+        $file_exists = false;
+
+        while(!$file_exists)
+		{
+			$folder_name = $this->ask('Please type the name of the directory you wish to backup');
+
+			if(file_exists("/var/www/$folder_name") )
+			{
+				$file_exists = true;
+			}else
+			{
+				$this->output->writeln("/var/www/$folder_name is not a valid directory");
+			}
+        }
+
         $time_start = microtime(true);
 
-        exec("zip -r /var/www/html/backup_$(date +\"%Y_%m_%d\").zip /var/www/html");
+        exec("zip -r /var/www/html/backup_$(date +\"%Y_%m_%d\").zip /var/www/$folder_name");
 
         $time_end = microtime(true);
 
         $execution_time = ($time_end - $time_start);
 
         $this->output->writeln('File backup completed.');
-        
+
         $this->output->writeln('Total Execution Time: '.round($execution_time).' Seconds');
 
     }
@@ -49,13 +75,15 @@ class Backup extends Command
         return [];
     }
 
-    /**
+     /**
      * Get the console command options.
      * @return array
      */
     protected function getOptions()
     {
-        return [];
+        return [
+            ['example', null, InputOption::VALUE_REQUIRED , 'An example option.', null],
+        ];
     }
 
 }
