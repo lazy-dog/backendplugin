@@ -54,7 +54,30 @@ class Backup extends Command
 
         $time_start = microtime(true);
 
-        exec("zip -r /var/www/html/backup_$(date +\"%Y_%m_%d\").zip /var/www/$folder_name");
+        exec("zip -r /var/www/backup_$(date +\"%Y_%m_%d\").zip /var/www/$folder_name");
+
+        
+
+
+        $database_config_file = file_get_contents('/var/www/html/config/database.php');
+        preg_match("/'password'[ ]*=>[ ]*'.*/", $database_config_file, $match);
+        preg_match("/[ ]*=>[ ]*'.*/", str_replace('password', '', $match[0]), $match2);
+        $match2 = trim(str_replace('=>', '', $match2[0]), ',');
+        $match2 = ltrim($match2, ' ');
+        $match2 = rtrim($match2, '\'');
+        $match2 = rtrim($match2, ' ');
+        $password = ltrim($match2, '\'');
+
+        $remove_me = "'database' => 'storage/database.sqlite'";
+        preg_match_all("/'database'[ ]*=>[ ]*'.*/", $database_config_file, $match);
+        preg_match_all("/[ ]*=>[ ]*'.*/", str_replace('database', '', $match[0][1]), $match2);
+        $match2 = trim(str_replace('=>', '', $match2[0][0]), ',');
+        $match2 = ltrim($match2, ' ');
+        $match2 = rtrim($match2, '\'');
+        $match2 = rtrim($match2, ' ');
+        $username = ltrim($match2, '\'');
+        exec(" mysqldump -u dbman '-p$password' $username > /var/www/backup.sql");
+
 
         $time_end = microtime(true);
 
@@ -63,7 +86,6 @@ class Backup extends Command
         $this->output->writeln('File backup completed.');
 
         $this->output->writeln('Total Execution Time: '.round($execution_time).' Seconds');
-
     }
 
     /**
