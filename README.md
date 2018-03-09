@@ -1,2 +1,2 @@
 # backendplugin
-Custom console commands for artisan
+Custom console commands for artisan/OctoberCMS
