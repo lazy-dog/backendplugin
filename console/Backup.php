@@ -26,7 +26,9 @@ class Backup extends Command
     {
         $this->output->writeln('Backing up files...');
 
-        $www_directory = '/var/www';
+        $cwd = getcwd();
+
+        $www_directory = realpath("$cwd/../");
 
 		$files = scandir($www_directory);
 
@@ -43,23 +45,20 @@ class Backup extends Command
 		{
 			$folder_name = $this->ask('Please type the name of the directory you wish to backup');
 
-			if(file_exists("/var/www/$folder_name") )
+			if(file_exists("$www_directory/$folder_name") )
 			{
 				$file_exists = true;
 			}else
 			{
-				$this->output->writeln("/var/www/$folder_name is not a valid directory");
+				$this->output->writeln("$www_directory/$folder_name is not a valid directory");
 			}
         }
 
         $time_start = microtime(true);
 
-        exec("zip -r /var/www/backup_$(date +\"%Y_%m_%d\").zip /var/www/$folder_name");
+        exec("zip -r $www_directory/backup_$(date +\"%Y_%m_%d\").zip $www_directory/$folder_name");
 
-        
-
-
-        $database_config_file = file_get_contents('/var/www/html/config/database.php');
+        $database_config_file = file_get_contents( getcwd().'/config/database.php' );
         preg_match("/'password'[ ]*=>[ ]*'.*/", $database_config_file, $match);
         preg_match("/[ ]*=>[ ]*'.*/", str_replace('password', '', $match[0]), $match2);
         $match2 = trim(str_replace('=>', '', $match2[0]), ',');
@@ -76,8 +75,18 @@ class Backup extends Command
         $match2 = rtrim($match2, '\'');
         $match2 = rtrim($match2, ' ');
         $username = ltrim($match2, '\'');
-        exec(" mysqldump -u dbman '-p$password' $username > /var/www/backup.sql");
 
+        preg_match("/'host'[ ]*=>[ ]*'.*/", $database_config_file, $match);
+        preg_match("/[ ]*=>[ ]*'.*/", str_replace('host', '', $match[0]), $match2);
+        $match2 = trim(str_replace('=>', '', $match2[0]), ',');
+        $match2 = ltrim($match2, ' ');
+        $match2 = rtrim($match2, '\'');
+        $match2 = rtrim($match2, ' ');
+        $host = ltrim($match2, '\'');
+        if($host=='local'){$host = 'localhost';}
+        $this->output->writeln($host);
+
+        exec(" mysqldump -u dbman -h $host '-p$password' $username > $www_directory/backup.sql");
 
         $time_end = microtime(true);
 
