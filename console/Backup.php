@@ -30,8 +30,18 @@ class Backup extends Command
 
         $www_directory = realpath("$cwd/../");
 
+        $database_config_file_path  = getcwd().'/config/database.php';
+
+        $database_config_file = file_get_contents( $database_config_file_path );
+
 		$files = scandir($www_directory);
 
+		$config = include $database_config_file_path;
+		$mysql_password = trim($config['connections']['mysql']['password']);
+		$mysql_username = $config['connections']['mysql']['username'];
+		$mysql_host = $config['connections']['mysql']['host'];
+		$mysql_database = $config['connections']['mysql']['database'];
+		
 		$this->output->writeln('Available directories:');
 
 		foreach($files as $file){
@@ -58,35 +68,9 @@ class Backup extends Command
 
         exec("zip -r $www_directory/backup_$(date +\"%Y_%m_%d\").zip $www_directory/$folder_name");
 
-        $database_config_file = file_get_contents( getcwd().'/config/database.php' );
-        preg_match("/'password'[ ]*=>[ ]*'.*/", $database_config_file, $match);
-        preg_match("/[ ]*=>[ ]*'.*/", str_replace('password', '', $match[0]), $match2);
-        $match2 = trim(str_replace('=>', '', $match2[0]), ',');
-        $match2 = ltrim($match2, ' ');
-        $match2 = rtrim($match2, '\'');
-        $match2 = rtrim($match2, ' ');
-        $password = ltrim($match2, '\'');
+        /*nothing to see here - FML*/
 
-        $remove_me = "'database' => 'storage/database.sqlite'";
-        preg_match_all("/'database'[ ]*=>[ ]*'.*/", $database_config_file, $match);
-        preg_match_all("/[ ]*=>[ ]*'.*/", str_replace('database', '', $match[0][1]), $match2);
-        $match2 = trim(str_replace('=>', '', $match2[0][0]), ',');
-        $match2 = ltrim($match2, ' ');
-        $match2 = rtrim($match2, '\'');
-        $match2 = rtrim($match2, ' ');
-        $username = ltrim($match2, '\'');
-
-        preg_match("/'host'[ ]*=>[ ]*'.*/", $database_config_file, $match);
-        preg_match("/[ ]*=>[ ]*'.*/", str_replace('host', '', $match[0]), $match2);
-        $match2 = trim(str_replace('=>', '', $match2[0]), ',');
-        $match2 = ltrim($match2, ' ');
-        $match2 = rtrim($match2, '\'');
-        $match2 = rtrim($match2, ' ');
-        $host = ltrim($match2, '\'');
-        if($host=='local'){$host = 'localhost';}
-        $this->output->writeln($host);
-
-        exec(" mysqldump -u dbman -h $host '-p$password' $username > $www_directory/backup.sql");
+        exec(" mysqldump -u $mysql_username -h $mysql_host '-p$mysql_password' $mysql_database > $www_directory/backup.sql");
 
         $time_end = microtime(true);
 
