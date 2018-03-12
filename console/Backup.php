@@ -37,7 +37,7 @@ class Backup extends Command
 		$files = scandir($www_directory);
 
 		$config = include $database_config_file_path;
-		$mysql_password = trim($config['connections']['mysql']['password']);
+		$mysql_password = $config['connections']['mysql']['password'];
 		$mysql_username = $config['connections']['mysql']['username'];
 		$mysql_host = $config['connections']['mysql']['host'];
 		$mysql_database = $config['connections']['mysql']['database'];
